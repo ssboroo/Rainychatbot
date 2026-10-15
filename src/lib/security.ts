@@ -1,5 +1,5 @@
 import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
-export class AppError extends Error { constructor(public status: number, message: string, public code = 'request.failed', public retryAfter?: string) { super(message); } }
+export class AppError extends Error { constructor(public status: number, message: string, public code = 'request.failed', public retryAfter?: string, public meta?: Record<string, unknown>) { super(message); } }
 export const token = () => randomBytes(32).toString('hex');
 export const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 export function hashPassword(password: string) { const salt = randomBytes(16).toString('hex'); return `${salt}:${scryptSync(password, salt, 64).toString('hex')}`; }

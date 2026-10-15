@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import assert from 'node:assert/strict';
 const port=Number(process.env.SMOKE_PORT||3189),base=`http://localhost:${port}`,dir=mkdtempSync(join(tmpdir(),'rainy-smoke-'));
-const child=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port),'--hostname','127.0.0.1'],{env:{...process.env,APP_URL:base,DATABASE_PATH:join(dir,'app.db'),ADMIN_EMAIL:'operator@example.com',ADMIN_SETUP_TOKEN:'test-only-setup-token',SOCIALAPI_KEY:'',NODE_ENV:'production'},stdio:['ignore','pipe','pipe']});let logs='';child.stdout.on('data',d=>logs+=d);child.stderr.on('data',d=>logs+=d);
+const child=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port),'--hostname','127.0.0.1'],{env:{...process.env,APP_URL:base,DATABASE_PATH:join(dir,'app.db'),ADMIN_EMAIL:'operator@example.com',ADMIN_SETUP_TOKEN:'test-only-setup-token',SOCIALAPI_KEY:'',DATA_ENCRYPTION_KEY:'cd'.repeat(32),NODE_ENV:'production'},stdio:['ignore','pipe','pipe']});let logs='';child.stdout.on('data',d=>logs+=d);child.stderr.on('data',d=>logs+=d);
 async function call(path,{cookie,body,origin=base,...options}={}){const r=await fetch(base+'/api/'+path,{...options,headers:{'Content-Type':'application/json',...(cookie?{Cookie:cookie}:{}),Origin:origin},body:body===undefined?undefined:JSON.stringify(body)});const json=await r.json();return {status:r.status,json,cookie:r.headers.get('set-cookie')?.split(';')[0],headers:r.headers}}
 try{
  let ready=false;for(let i=0;i<100;i++){try{if((await fetch(base+'/api/health')).ok){ready=true;break}}catch{}await new Promise(r=>setTimeout(r,100))}assert.equal(ready,true,logs);
@@ -28,7 +28,18 @@ try{
  const inviteToken=new URL(invite.json.url).searchParams.get('invite');const agent=await call('auth/register?invite='+inviteToken,{method:'POST',body:{name:'Ажилтан',email:'agent@example.com',password:'test-agent-password'}});assert.equal(agent.status,201,JSON.stringify(agent.json));
  assert.equal((await call('action',{method:'POST',cookie:agent.cookie,body:{action:'workspace.rename',payload:{name:'Эрхгүй засвар'}}})).status,403);
  assert.equal((await call('data?resource=contacts',{cookie:agent.cookie})).json.data.length,1);
+ const product=await call('action',{method:'POST',cookie:cookieA,body:{action:'product.save',payload:{name:'Төлбөрийн бүтээгдэхүүн',amount:29000,description:'Тест',image_url:'',active:true}}});assert.equal(product.status,200,JSON.stringify(product.json));
+ assert.equal((await call('action',{method:'POST',cookie:cookieB,body:{action:'product.save',payload:{...product.json,name:'Өөрчлөх',amount:1,active:true}}})).status,404);
+ const publicProduct=await call('public/products/'+product.json.public_token);assert.equal(publicProduct.status,200);assert.equal(publicProduct.json.amount,29000);assert.equal(publicProduct.json.configured,false);
+ assert.equal((await call('public/products/'+product.json.public_token,{method:'POST',origin:'https://evil.example',body:{request_key:crypto.randomUUID(),amount:1}})).status,403);
+ assert.equal((await call('public/products/'+product.json.public_token,{method:'POST',body:{request_key:crypto.randomUUID(),amount:1}})).status,503);
+ assert.equal((await call('qpay/callback/unknown?token=spoofed')).status,404);
+ assert.equal((await call('public/invoices/'+ 'a'.repeat(64))).status,404);
+ assert.equal((await call('action',{method:'POST',cookie:agent.cookie,body:{action:'qpay.save',payload:{}}})).status,403);
+ assert.equal((await call('action',{method:'POST',cookie:cookieA,body:{action:'qpay.save',payload:{client_id:'dummy-test',client_secret:'not-a-real-key',invoice_code:'TEST',environment:'sandbox',merchant_name:'Тест'}}})).status,200);
+ const savedPayments=await call('data?resource=payments',{cookie:cookieA});assert.equal(savedPayments.json.merchant.configured,true);assert.equal(JSON.stringify(savedPayments.json).includes('not-a-real-key'),false);
+ assert.equal((await call('data?resource=payments',{cookie:cookieB})).json.products.length,0);
  assert.equal((await call('auth/logout',{method:'POST',cookie:cookieA})).status,200);assert.equal((await call('data?resource=contacts',{cookie:cookieA})).status,401);
  const home=await fetch(base);assert.equal(home.status,200);assert.equal(home.headers.get('x-content-type-options'),'nosniff');
- console.log('PASS: registration, sessions, admin claim, CSRF, tenant isolation, invitation roles, configuration failure, logout, health and headers.');
+ console.log('PASS: registration, sessions, admin claim, CSRF, tenant isolation, invitation roles, configuration failure, logout, product tenant isolation, QPay secret redaction, checkout CSRF, callback spoof rejection, health and headers.');
 }finally{child.kill('SIGTERM');await new Promise(resolve=>child.once('exit',resolve));rmSync(dir,{recursive:true,force:true})}
