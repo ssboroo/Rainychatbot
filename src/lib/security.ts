@@ -1,0 +1,10 @@
+import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+export class AppError extends Error { constructor(public status: number, message: string, public code = 'request.failed', public retryAfter?: string, public meta?: Record<string, unknown>) { super(message); } }
+export const token = () => randomBytes(32).toString('hex');
+export const digest = (value: string) => createHash('sha256').update(value).digest('hex');
+export function hashPassword(password: string) { const salt = randomBytes(16).toString('hex'); return `${salt}:${scryptSync(password, salt, 64).toString('hex')}`; }
+export function checkPassword(password: string, stored: string) { try { const [salt, hash] = stored.split(':'); const expected = Buffer.from(hash, 'hex'); const actual = scryptSync(password, salt, 64); return expected.length === actual.length && timingSafeEqual(expected, actual); } catch { return false; } }
+export function verifyWebhook(secret: string, raw: string, timestamp: string | null, signature: string | null, now = Date.now()) { if (!secret || !timestamp || !signature || !/^\d+$/.test(timestamp) || Math.abs(now / 1000 - Number(timestamp)) > 300) return false; const expected = Buffer.from('sha256=' + createHmac('sha256', secret).update(`${timestamp}.${raw}`).digest('hex')); const actual = Buffer.from(signature); return expected.length === actual.length && timingSafeEqual(expected, actual); }
+export function requireSameOrigin(request: Request) { const origin = request.headers.get('origin'); const base = process.env.APP_URL || new URL(request.url).origin; if (!origin || origin !== new URL(base).origin) throw new AppError(403, 'Хүсэлтийн эх сурвалж зөвшөөрөгдөөгүй.', 'auth.origin'); }
+export function id(value: unknown) { if (typeof value !== 'string' || !value || value.length > 512 || /[\x00-\x1f]/.test(value)) throw new AppError(400, 'ID буруу байна.'); return encodeURIComponent(value); }
+export function requiredText(value: unknown, max = 5000) { if (typeof value !== 'string' || !value.trim() || value.length > max) throw new AppError(400, `Текстээ оруулна уу. Дээд тал нь ${max} тэмдэгт.`); return value.trim(); }

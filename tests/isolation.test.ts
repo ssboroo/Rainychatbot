@@ -1,0 +1,17 @@
+import { test, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+const dir=mkdtempSync(join(tmpdir(),'rainy-unit-'));process.env.DATABASE_PATH=join(dir,'test.db');process.env.SOCIALAPI_KEY='test-only-placeholder';
+import {db} from '../src/lib/db';
+import {ownAccount,ownConversation,ownPost,ownResource,remember,brand,setTransportForTests,social} from '../src/lib/social';
+const user={id:'u1',workspace_id:'w1',name:'Test',email:'test@example.com',role:'owner',workspace_name:'Test workspace',brand_id:'b1'};
+db().prepare('INSERT INTO workspaces(id,name,brand_id) VALUES(?,?,?)').run('w1','Test workspace','b1');let createCount=0;
+setTransportForTests(async(input:any,init:any)=>{const url=new URL(String(input));let response:any={data:[]};if(url.pathname==='/v1/accounts'){assert.equal(url.searchParams.get('brand_id'),'b1');response={data:[{id:'a1',brand_id:'b1'}]}}if(url.pathname.includes('/conversations/'))response={id:'foreign-thread',account_id:'a2'};if(url.pathname.includes('/posts/'))response={targets:[{account_id:'a1'},{account_id:'a2'}]};if(url.pathname==='/v1/brands'){createCount++;await new Promise(r=>setTimeout(r,10));response={id:'new-brand'}}if(url.pathname==='/v1/fail')return Response.json({error:{code:'validation.interaction_limit_exhausted'}},{status:429,headers:{'Retry-After':'60'}});return Response.json(response)});
+test('account and conversation ownership fail closed across tenants',async()=>{await assert.doesNotReject(()=>ownAccount(user,'a1'));await assert.rejects(()=>ownAccount(user,'a2'),/Суваг олдсонгүй/);await assert.rejects(()=>ownConversation(user,'foreign-thread'),/Суваг олдсонгүй/)});
+test('a post mixing owned and foreign accounts is not accessible',async()=>{await assert.rejects(()=>ownPost(user,'foreign-post'),/Пост олдсонгүй/)});
+test('media resources require a persisted workspace ownership record',()=>{remember(user,'media','m1');assert.doesNotThrow(()=>ownResource(user,'media','m1'));assert.throws(()=>ownResource({...user,workspace_id:'w2'},'media','m1'));assert.throws(()=>ownResource(user,'media','foreign'))});
+test('concurrent first connections create only one chargeable brand',async()=>{db().prepare('INSERT INTO workspaces(id,name) VALUES(?,?)').run('w2','Second workspace');const u={...user,workspace_id:'w2',brand_id:null};const ids=await Promise.all([brand(u),brand(u),brand(u)]);assert.deepEqual(ids,['new-brand','new-brand','new-brand']);assert.equal(createCount,1)});
+test('provider quota errors preserve status and retry guidance',async()=>{await assert.rejects(()=>social('/fail'),(e:any)=>e.status===429&&e.retryAfter==='60'&&e.code==='validation.interaction_limit_exhausted')});
+after(()=>{db().close();rmSync(dir,{recursive:true,force:true})});

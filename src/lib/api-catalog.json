@@ -1,0 +1,3938 @@
+[
+  {
+    "path": "/accounts",
+    "method": "GET",
+    "summary": "List connected accounts",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "brand_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter accounts by brand ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/connect",
+    "method": "POST",
+    "summary": "Connect a social account",
+    "group": "Accounts",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "brand_id": {
+          "description": "BrandID optionally specifies which brand to attach the account to. If omitted, a new brand is auto-created.",
+          "type": "string",
+          "example": "b_01HZ9X3Q4R5M6N7P8V2K0W1J"
+        },
+        "metadata": {
+          "description": "Metadata contains platform-specific connection data",
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "permissions": {
+          "description": "Permissions are the permissions to request for this account. If omitted, the brand's existing selection for this platform applies, and a brand with none gets every permission. Valid values: posts.read, posts.write, comments.read, comments.write, messages.read, messages.write, reviews.read, reviews.write, analytics.read.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "comments.read",
+            "comments.write"
+          ]
+        },
+        "platform": {
+          "description": "Platform identifies the social platform to connect (e.g. instagram, facebook, google, threads, tiktok, linkedin).",
+          "type": "string",
+          "example": "instagram"
+        },
+        "redirect_uri": {
+          "description": "RedirectURI is the customer's URL to redirect the user to after OAuth completes.\nIf you have registered redirect URIs in the dashboard, the value must match one of them.\nIf you have none registered, any valid https URI is accepted. If omitted, the default HTML success page is shown.",
+          "type": "string",
+          "example": "https://app.acme.com/oauth/done"
+        },
+        "state": {
+          "description": "CustomerState is an opaque value echoed back to the customer's redirect URI. Max 512 chars.",
+          "type": "string",
+          "example": "session_abc123"
+        }
+      }
+    }
+  },
+  {
+    "path": "/accounts/pending/{connection_id}",
+    "method": "GET",
+    "summary": "Get a pending Google Profile selection",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "connection_id",
+        "in": "path",
+        "required": true,
+        "description": "Pending connection ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/pending/{connection_id}/select",
+    "method": "POST",
+    "summary": "Select a Google Business Profile or Facebook Pages to connect",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "connection_id",
+        "in": "path",
+        "required": true,
+        "description": "Pending connection ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "page_ids": {
+          "description": "PageIDs selects the Facebook Pages to assign to the brand (Facebook pending connections only).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "platform_account_id": {
+          "description": "PlatformAccountID selects the Google Business Profile to connect (Google\npending connections only).",
+          "type": "string",
+          "example": "accounts/123/locations/456"
+        }
+      }
+    }
+  },
+  {
+    "path": "/accounts/{id}",
+    "method": "DELETE",
+    "summary": "Disconnect a social account",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/{id}",
+    "method": "PATCH",
+    "summary": "Update an account's permissions",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Account ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "description": "Permissions replaces the account's permissions and is required. Send null to give the account every permission, including ones added later. An empty list is rejected. Removing a permission immediately deletes the comments, messages, analytics and posts not published through SocialAPI that it covers; posts published through SocialAPI are kept. Valid values: posts.read, posts.write, comments.read, comments.write, messages.read, messages.write, reviews.read, reviews.write, analytics.read.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "comments.read",
+            "comments.write"
+          ],
+          "nullable": true
+        }
+      }
+    }
+  },
+  {
+    "path": "/accounts/{id}/analytics",
+    "method": "GET",
+    "summary": "Get account analytics history",
+    "group": "Analytics",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "description": "First day, YYYY-MM-DD. Defaults to 29 days before to."
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "description": "Last day, YYYY-MM-DD. Defaults to today (UTC)."
+      },
+      {
+        "name": "metrics",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated metric names. Defaults to every stored metric."
+      },
+      {
+        "name": "page_id",
+        "in": "query",
+        "required": false,
+        "description": "Narrow to one page of a multi-page account"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/{id}/boards",
+    "method": "GET",
+    "summary": "List Pinterest boards",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/{id}/boards",
+    "method": "POST",
+    "summary": "Create Pinterest board",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "example": "Weeknight dinners"
+        },
+        "name": {
+          "type": "string",
+          "example": "Recipes"
+        },
+        "privacy": {
+          "type": "string",
+          "enum": [
+            "PUBLIC",
+            "PROTECTED",
+            "SECRET"
+          ],
+          "example": "PUBLIC"
+        }
+      }
+    }
+  },
+  {
+    "path": "/accounts/{id}/boards/{boardId}",
+    "method": "DELETE",
+    "summary": "Delete Pinterest board",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "boardId",
+        "in": "path",
+        "required": true,
+        "description": "Board ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/{id}/boards/{boardId}",
+    "method": "PATCH",
+    "summary": "Update Pinterest board",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "boardId",
+        "in": "path",
+        "required": true,
+        "description": "Board ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "example": "Weeknight dinners"
+        },
+        "name": {
+          "type": "string",
+          "example": "Recipes"
+        },
+        "privacy": {
+          "type": "string",
+          "enum": [
+            "PUBLIC",
+            "SECRET"
+          ],
+          "example": "PUBLIC"
+        }
+      }
+    }
+  },
+  {
+    "path": "/accounts/{id}/creator-info",
+    "method": "GET",
+    "summary": "Get creator info for publishing",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/{id}/export",
+    "method": "POST",
+    "summary": "Create analytics export",
+    "group": "Exports",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "include_transcript": {
+          "type": "boolean",
+          "example": true
+        },
+        "include_vision": {
+          "type": "boolean",
+          "example": false
+        }
+      }
+    }
+  },
+  {
+    "path": "/accounts/{id}/limits",
+    "method": "GET",
+    "summary": "Get platform usage limits",
+    "group": "Usage",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/{id}/mentions",
+    "method": "GET",
+    "summary": "List brand mentions",
+    "group": "Mentions",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "since",
+        "in": "query",
+        "required": false,
+        "description": "Return only items created after this timestamp (RFC3339)"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Maximum number of results to return (1-100, default 20)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor returned by the previous response"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/{id}/mentions/reply",
+    "method": "POST",
+    "summary": "Reply to a mention",
+    "group": "Mentions",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "comment_id": {
+          "type": "string"
+        },
+        "media_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/accounts/{id}/pages",
+    "method": "GET",
+    "summary": "List account pages",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/accounts/{id}/pages/{pageId}",
+    "method": "PATCH",
+    "summary": "Update account page",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "pageId",
+        "in": "path",
+        "required": true,
+        "description": "Page ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "is_active": {
+          "type": "boolean"
+        },
+        "is_default": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  {
+    "path": "/accounts/{id}/sync",
+    "method": "POST",
+    "summary": "Re-sync a connected account's posts",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/announcements",
+    "method": "GET",
+    "summary": "List active announcements",
+    "group": "Announcements",
+    "parameters": [],
+    "bodySchema": {}
+  },
+  {
+    "path": "/announcements/{id}/seen",
+    "method": "POST",
+    "summary": "Mark an announcement as seen",
+    "group": "Announcements",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Announcement ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/automations",
+    "method": "GET",
+    "summary": "List Automations",
+    "group": "Automations",
+    "parameters": [
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": false,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/automations",
+    "method": "POST",
+    "summary": "Create an Automation",
+    "group": "Automations",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "example": "acc_01HZ9X3Q4R5M6N7P8V2K0W1J"
+        },
+        "follow_gate": {
+          "description": "Builds the three-step Follow gate. Instagram, comment trigger only. Send instead of steps",
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/social-api_ai_core_api_service.FollowGate"
+            }
+          ]
+        },
+        "name": {
+          "description": "1 to 100 characters",
+          "type": "string",
+          "example": "Send the link"
+        },
+        "once_per_person": {
+          "description": "Reach each person at most once. A run in which every action failed does not count. Defaults to false",
+          "type": "boolean"
+        },
+        "post_ids": {
+          "description": "Up to 100 platform post ids, each 1 to 100 characters, a comment must be on. Omitted means every post. Comment trigger only",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/social-api_ai_core_api_service.Step"
+          }
+        },
+        "trigger": {
+          "type": "string",
+          "enum": [
+            "comment",
+            "dm"
+          ],
+          "example": "comment"
+        }
+      }
+    }
+  },
+  {
+    "path": "/automations/{id}",
+    "method": "GET",
+    "summary": "Get an Automation",
+    "group": "Automations",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Automation ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/automations/{id}",
+    "method": "DELETE",
+    "summary": "Delete an Automation",
+    "group": "Automations",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Automation ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/automations/{id}",
+    "method": "PATCH",
+    "summary": "Update an Automation",
+    "group": "Automations",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Automation ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "1 to 100 characters",
+          "type": "string"
+        },
+        "once_per_person": {
+          "type": "boolean"
+        },
+        "post_ids": {
+          "description": "Up to 100 platform post ids, each 1 to 100 characters, a comment must be on. An empty list means every post. Comment trigger only",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "paused"
+          ]
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/social-api_ai_core_api_service.Step"
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "/automations/{id}/firings",
+    "method": "GET",
+    "summary": "List an Automation's runs",
+    "group": "Automations",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Automation ID"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "next_cursor from the previous page"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Page size, 1 to 100, default 20"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/brands",
+    "method": "GET",
+    "summary": "List brands",
+    "group": "Brands",
+    "parameters": [],
+    "bodySchema": {}
+  },
+  {
+    "path": "/brands",
+    "method": "POST",
+    "summary": "Create a brand",
+    "group": "Brands",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Acme Corporation"
+        }
+      }
+    }
+  },
+  {
+    "path": "/brands/{id}",
+    "method": "DELETE",
+    "summary": "Delete a brand",
+    "group": "Brands",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Brand ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/brands/{id}",
+    "method": "PATCH",
+    "summary": "Update a brand",
+    "group": "Brands",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Brand ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Acme Corp"
+        }
+      }
+    }
+  },
+  {
+    "path": "/brands/{id}/analytics",
+    "method": "GET",
+    "summary": "Get brand analytics history",
+    "group": "Analytics",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Brand ID"
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "description": "First day, YYYY-MM-DD. Defaults to 29 days before to."
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "description": "Last day, YYYY-MM-DD. Defaults to today (UTC)."
+      },
+      {
+        "name": "metrics",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated metric names. Defaults to every stored metric."
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/events",
+    "method": "GET",
+    "summary": "List developer events",
+    "group": "Events",
+    "parameters": [
+      {
+        "name": "category",
+        "in": "query",
+        "required": false,
+        "description": "Filter by event category"
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "Filter by status (ok, failed)"
+      },
+      {
+        "name": "platform",
+        "in": "query",
+        "required": false,
+        "description": "Filter by platform"
+      },
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter by connected account ID"
+      },
+      {
+        "name": "resource_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter by resource ID (post, conversation, ...)"
+      },
+      {
+        "name": "action",
+        "in": "query",
+        "required": false,
+        "description": "Filter by action (e.g. post.published)"
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "description": "Lower time bound (RFC3339)"
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "description": "Upper time bound (RFC3339)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from a previous response"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Page size (default 50)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/events/summary",
+    "method": "GET",
+    "summary": "Event summary counts",
+    "group": "Events",
+    "parameters": [
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "description": "Lower time bound (RFC3339)"
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "description": "Upper time bound (RFC3339)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/exports",
+    "method": "GET",
+    "summary": "List analytics exports",
+    "group": "Exports",
+    "parameters": [
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "Filter by status (pending, processing, completed, failed)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/exports/{id}",
+    "method": "GET",
+    "summary": "Get export status and result",
+    "group": "Exports",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Export ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/exports/{id}/videos",
+    "method": "GET",
+    "summary": "Get export videos",
+    "group": "Exports",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Export ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/feedback",
+    "method": "POST",
+    "summary": "Send feedback",
+    "group": "Feedback",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "Message is the feedback content.",
+          "type": "string",
+          "example": "It would be great to have a dark mode."
+        },
+        "type": {
+          "description": "Type is one of: bug, feature_request, general.",
+          "type": "string",
+          "example": "feature_request"
+        }
+      }
+    }
+  },
+  {
+    "path": "/inbox/comments",
+    "method": "GET",
+    "summary": "List commented posts",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter by connected account ID"
+      },
+      {
+        "name": "brand_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter by brand ID (returns only posts from accounts in this brand)"
+      },
+      {
+        "name": "platform",
+        "in": "query",
+        "required": false,
+        "description": "Filter by platform (instagram, facebook, threads, tiktok, youtube, twitter, bluesky, whatsapp)"
+      },
+      {
+        "name": "min_comments",
+        "in": "query",
+        "required": false,
+        "description": "Only return posts with at least this many comments (default 0)"
+      },
+      {
+        "name": "since",
+        "in": "query",
+        "required": false,
+        "description": "Only return posts commented after this timestamp (RFC3339)"
+      },
+      {
+        "name": "sort_by",
+        "in": "query",
+        "required": false,
+        "description": "Sort field: date (default)"
+      },
+      {
+        "name": "sort_order",
+        "in": "query",
+        "required": false,
+        "description": "Sort direction: desc (default) or asc"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Max results per page (default 25)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from previous response"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/comments/{postId}",
+    "method": "GET",
+    "summary": "List comments on a post",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "postId",
+        "in": "path",
+        "required": true,
+        "description": "Platform post ID"
+      },
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID that owns the post"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Max results per page (default 25)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from previous response"
+      },
+      {
+        "name": "moderation_status",
+        "in": "query",
+        "required": false,
+        "description": "Filter by moderation status: published (default), held_for_review, likely_spam. YouTube only; ignored by other platforms."
+      },
+      {
+        "name": "order",
+        "in": "query",
+        "required": false,
+        "description": "Order: recent (default) or relevance. YouTube only; ignored by other platforms."
+      },
+      {
+        "name": "q",
+        "in": "query",
+        "required": false,
+        "description": "Keyword search across comment text (max 256 chars). YouTube only; ignored by other platforms."
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/comments/{postId}",
+    "method": "POST",
+    "summary": "Reply to a comment",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "postId",
+        "in": "path",
+        "required": true,
+        "description": "Platform post ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "comment_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/inbox/comments/{postId}/{commentId}",
+    "method": "DELETE",
+    "summary": "Delete a comment",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "postId",
+        "in": "path",
+        "required": true,
+        "description": "Platform post ID"
+      },
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "description": "Platform comment ID to delete"
+      },
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/comments/{postId}/{commentId}/hide",
+    "method": "POST",
+    "summary": "Hide a comment",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "postId",
+        "in": "path",
+        "required": true,
+        "description": "Platform post ID"
+      },
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "description": "Platform comment ID to hide"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/inbox/comments/{postId}/{commentId}/hide",
+    "method": "DELETE",
+    "summary": "Unhide a comment",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "postId",
+        "in": "path",
+        "required": true,
+        "description": "Platform post ID"
+      },
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "description": "Platform comment ID to unhide"
+      },
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/comments/{postId}/{commentId}/like",
+    "method": "POST",
+    "summary": "Like a comment",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "postId",
+        "in": "path",
+        "required": true,
+        "description": "Platform post ID"
+      },
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "description": "Platform comment ID to like"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/inbox/comments/{postId}/{commentId}/like",
+    "method": "DELETE",
+    "summary": "Unlike a comment",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "postId",
+        "in": "path",
+        "required": true,
+        "description": "Platform post ID"
+      },
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "description": "Platform comment ID to unlike"
+      },
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/comments/{postId}/{commentId}/private-reply",
+    "method": "POST",
+    "summary": "Send a private reply to a commenter",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "postId",
+        "in": "path",
+        "required": true,
+        "description": "Platform post ID"
+      },
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "description": "Platform comment ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "buttons": {
+          "description": "Buttons renders a button template (1-3 buttons); uses text as the bubble body.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.MessageButton"
+          }
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/inbox/comments/{postId}/{commentId}/replies",
+    "method": "GET",
+    "summary": "List replies to a comment",
+    "group": "Inbox Comments",
+    "parameters": [
+      {
+        "name": "postId",
+        "in": "path",
+        "required": true,
+        "description": "Platform post ID"
+      },
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "description": "Platform comment ID to get replies for"
+      },
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID that owns the post"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Max results per page (default 10)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from previous response"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/conversations",
+    "method": "GET",
+    "summary": "List inbox conversations",
+    "group": "Inbox",
+    "parameters": [
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter by connected account ID"
+      },
+      {
+        "name": "brand_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter by brand ID (returns only conversations from accounts in this brand)"
+      },
+      {
+        "name": "page_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter by Facebook/Instagram page ID (for multi-page accounts)"
+      },
+      {
+        "name": "platform",
+        "in": "query",
+        "required": false,
+        "description": "Filter by platform (instagram, facebook, …)"
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "Conversation status: active (default) or archived"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Max results (1–100, default 25)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from previous response"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/conversations/{id}",
+    "method": "GET",
+    "summary": "Get a conversation",
+    "group": "Inbox",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Conversation ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/conversations/{id}",
+    "method": "PATCH",
+    "summary": "Update conversation status",
+    "group": "Inbox",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Conversation ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "description": "Status must be \"active\" or \"archived\".",
+          "type": "string",
+          "enum": [
+            "active",
+            "archived"
+          ],
+          "example": "archived"
+        }
+      }
+    }
+  },
+  {
+    "path": "/inbox/conversations/{id}/messages",
+    "method": "GET",
+    "summary": "List messages in a conversation",
+    "group": "Inbox",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Conversation ID"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Max results (1–200, default 25)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from previous response"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/conversations/{id}/messages",
+    "method": "POST",
+    "summary": "Send a message in a conversation",
+    "group": "Inbox",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Conversation ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "required": [
+        "account_id"
+      ],
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "example": "acc_abc123"
+        },
+        "attachment_url": {
+          "description": "AttachmentURL is a single-attachment shorthand. Ignored when attachments is\nnon-empty; its type is inferred from the URL extension.\n\nDeprecated: use Attachments instead, which supersedes it and supports one or\nmany items.",
+          "type": "string",
+          "example": "https://cdn.example.com/photo.jpg"
+        },
+        "attachments": {
+          "description": "Attachments sends one or more media items, each as its own message bubble.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.DMAttachmentInput"
+          }
+        },
+        "buttons": {
+          "description": "Buttons renders a button template (1-3 buttons); uses text as the bubble body.\nOn WhatsApp every button must be type postback with a unique payload.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.MessageButton"
+          }
+        },
+        "cards": {
+          "description": "Cards renders a generic/carousel template (up to 10 cards).",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.MessageCard"
+          }
+        },
+        "list_button": {
+          "description": "ListButton is the label on the button that opens the list. Required with\nlist_sections, max 20 characters.",
+          "type": "string",
+          "example": "View options"
+        },
+        "list_sections": {
+          "description": "ListSections renders a tappable list behind a single button, for menus wider\nthan the 3 buttons a reply-button message allows (up to 10 rows in total,\nacross up to 10 sections). WhatsApp only; requires text and list_button.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.MessageListSection"
+          }
+        },
+        "message_tag": {
+          "description": "MessageTag attaches a Meta message tag so the DM can be sent outside the\nstandard 24-hour window. Instagram/Facebook only. Instagram accepts only\nHUMAN_AGENT; Facebook also accepts ACCOUNT_UPDATE, CONFIRMED_EVENT_UPDATE,\nCUSTOMER_FEEDBACK, POST_PURCHASE_UPDATE. Requires Meta \"Human Agent\"\nadvanced access for HUMAN_AGENT. Ignored by non-Meta platforms. For beta\ntesters replying on Facebook Messenger, HUMAN_AGENT is applied\nautomatically when this field is omitted.",
+          "type": "string",
+          "example": "HUMAN_AGENT"
+        },
+        "quick_replies": {
+          "description": "QuickReplies renders up to 13 tappable chips above the keyboard; requires text.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.MessageQuickReply"
+          }
+        },
+        "reply_to_message_id": {
+          "description": "ReplyToMessageID makes the first sent bubble a reply to a specific prior\nmessage (Meta reply_to.mid). Instagram/Facebook only.",
+          "type": "string",
+          "example": "m_1234567890"
+        },
+        "text": {
+          "type": "string",
+          "example": "Thanks for your message!"
+        }
+      }
+    }
+  },
+  {
+    "path": "/inbox/conversations/{id}/messages/{messageId}/reaction",
+    "method": "POST",
+    "summary": "React to a message",
+    "group": "Inbox Conversations",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Conversation ID"
+      },
+      {
+        "name": "messageId",
+        "in": "path",
+        "required": true,
+        "description": "Platform message ID to react to"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "reaction": {
+          "type": "string",
+          "example": "🎉"
+        }
+      }
+    }
+  },
+  {
+    "path": "/inbox/conversations/{id}/messages/{messageId}/reaction",
+    "method": "DELETE",
+    "summary": "Remove a reaction from a message",
+    "group": "Inbox Conversations",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Conversation ID"
+      },
+      {
+        "name": "messageId",
+        "in": "path",
+        "required": true,
+        "description": "Platform message ID to remove the reaction from"
+      },
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/conversations/{id}/read",
+    "method": "POST",
+    "summary": "Mark conversation as read",
+    "group": "Inbox",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Conversation ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/media/{id}",
+    "method": "GET",
+    "summary": "Get inbox media",
+    "group": "Inbox",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Inbox media ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/reviews",
+    "method": "GET",
+    "summary": "List Accounts with reviews",
+    "group": "Inbox Reviews",
+    "parameters": [
+      {
+        "name": "platform",
+        "in": "query",
+        "required": false,
+        "description": "Filter by platform (google)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/reviews/{account_id}",
+    "method": "GET",
+    "summary": "List reviews for an Account",
+    "group": "Inbox Reviews",
+    "parameters": [
+      {
+        "name": "account_id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Max results (1-50, default 20)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from previous response"
+      },
+      {
+        "name": "order",
+        "in": "query",
+        "required": false,
+        "description": "Sort order"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/reviews/{id}/reply",
+    "method": "POST",
+    "summary": "Reply to a review",
+    "group": "Inbox Reviews",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Review ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/inbox/sync",
+    "method": "GET",
+    "summary": "Get inbox sync status",
+    "group": "Inbox",
+    "parameters": [
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "conversation_id",
+        "in": "query",
+        "required": false,
+        "description": "Conversation ID, to report on a thread sync instead of the account's list"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/inbox/sync",
+    "method": "POST",
+    "summary": "Start an inbox sync",
+    "group": "Inbox",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "example": "acc_01H..."
+        },
+        "conversation_id": {
+          "type": "string",
+          "example": "6f1c..."
+        }
+      }
+    }
+  },
+  {
+    "path": "/invite/{token}",
+    "method": "GET",
+    "summary": "Redeem an invite link",
+    "group": "Invites",
+    "parameters": [
+      {
+        "name": "token",
+        "in": "path",
+        "required": true,
+        "description": "Invite token"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/invites",
+    "method": "GET",
+    "summary": "List invites for a brand",
+    "group": "Invites",
+    "parameters": [
+      {
+        "name": "brand_id",
+        "in": "query",
+        "required": true,
+        "description": "Brand ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/invites",
+    "method": "POST",
+    "summary": "Create an invite link",
+    "group": "Invites",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "brand_id": {
+          "type": "string",
+          "example": "b_01HZ9X3Q4R5M6N7P8V2K0W1J"
+        },
+        "expires_in_days": {
+          "type": "integer",
+          "example": 7
+        },
+        "permissions": {
+          "description": "The permissions the connected account gets, which are the only ones the invited person is asked to grant. Omit it to keep the brand's current permissions for this platform, or to give every permission if it has none. Valid values: posts.read, posts.write, comments.read, comments.write, messages.read, messages.write, reviews.read, reviews.write, analytics.read.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "comments.read",
+            "comments.write"
+          ]
+        },
+        "platform": {
+          "type": "string",
+          "example": "facebook"
+        }
+      }
+    }
+  },
+  {
+    "path": "/invites/{id}",
+    "method": "DELETE",
+    "summary": "Revoke an invite",
+    "group": "Invites",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Invite ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/media",
+    "method": "GET",
+    "summary": "List media files",
+    "group": "Media",
+    "parameters": [
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Max results (default 50, max 100)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor (media ID)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/media/storage",
+    "method": "GET",
+    "summary": "Get storage usage",
+    "group": "Media",
+    "parameters": [],
+    "bodySchema": {}
+  },
+  {
+    "path": "/media/upload-url",
+    "method": "GET",
+    "summary": "Get a presigned media upload URL",
+    "group": "Media",
+    "parameters": [
+      {
+        "name": "media_type",
+        "in": "query",
+        "required": true,
+        "description": "MIME type (e.g. image/jpeg)"
+      },
+      {
+        "name": "filename",
+        "in": "query",
+        "required": true,
+        "description": "Original filename"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/media/{id}",
+    "method": "DELETE",
+    "summary": "Delete a media file",
+    "group": "Media",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Media ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/media/{id}/verify",
+    "method": "POST",
+    "summary": "Verify a media upload",
+    "group": "Media",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Media ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/migrations",
+    "method": "POST",
+    "summary": "Start a migration",
+    "group": "Migration",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "required": [
+        "authorisation_version",
+        "key",
+        "provider"
+      ],
+      "properties": {
+        "authorisation_version": {
+          "description": "Version of the authorisation text you accepted, as returned in `authorisation.version`.",
+          "type": "string"
+        },
+        "key": {
+          "description": "API key from your account with that provider. It needs read access to profiles and accounts.",
+          "type": "string"
+        },
+        "provider": {
+          "description": "Identifier of the provider you are moving from.",
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/migrations/{provider}",
+    "method": "GET",
+    "summary": "Get a migration",
+    "group": "Migration",
+    "parameters": [
+      {
+        "name": "provider",
+        "in": "path",
+        "required": true,
+        "description": "Provider identifier"
+      },
+      {
+        "name": "refresh",
+        "in": "query",
+        "required": false,
+        "description": "true to read your accounts now"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/migrations/{provider}",
+    "method": "DELETE",
+    "summary": "Stop a migration",
+    "group": "Migration",
+    "parameters": [
+      {
+        "name": "provider",
+        "in": "path",
+        "required": true,
+        "description": "Provider identifier"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/facebook/accounts/{id}/insights/daily",
+    "method": "GET",
+    "summary": "Get daily Facebook Page insights (beta)",
+    "group": "Facebook",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "page_id",
+        "in": "query",
+        "required": false,
+        "description": "Page to report on, the id from GET /accounts/{id}/pages. Defaults to the account's default Page."
+      },
+      {
+        "name": "days",
+        "in": "query",
+        "required": false,
+        "description": "Trailing days to return, 1 to 365. Defaults to 365."
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/facebook/accounts/{id}/summary",
+    "method": "GET",
+    "summary": "Get Facebook Page insights summary (beta)",
+    "group": "Facebook",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "page_id",
+        "in": "query",
+        "required": false,
+        "description": "Page to report on, the id from GET /accounts/{id}/pages. Defaults to the account's default Page."
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/facebook/logins/{loginId}/pages",
+    "method": "GET",
+    "summary": "List a Facebook login's Pages",
+    "group": "Facebook",
+    "parameters": [
+      {
+        "name": "loginId",
+        "in": "path",
+        "required": true,
+        "description": "Facebook login (credential) ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/facebook/logins/{loginId}/pages/{pageId}/assign",
+    "method": "POST",
+    "summary": "Assign a Facebook Page to a brand",
+    "group": "Facebook",
+    "parameters": [
+      {
+        "name": "loginId",
+        "in": "path",
+        "required": true,
+        "description": "Facebook login (credential) ID"
+      },
+      {
+        "name": "pageId",
+        "in": "path",
+        "required": true,
+        "description": "Platform page ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "brand_id": {
+          "type": "string",
+          "example": "b7f9..."
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/google/accounts/{id}",
+    "method": "PUT",
+    "summary": "Update a Google Business Profile location",
+    "group": "Google",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "validate_only",
+        "in": "query",
+        "required": false,
+        "description": "Validate the change without applying it"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "ad_phone": {
+          "description": "AdPhone is the alternate number shown on Google Ads extensions.",
+          "type": "string"
+        },
+        "categories": {
+          "$ref": "#/components/schemas/social-api_ai_core_api_connectors_base.GBPCategoriesUpdate"
+        },
+        "description": {
+          "type": "string",
+          "example": "Wood-fired pizza since 1998"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "latlng": {
+          "$ref": "#/components/schemas/social-api_ai_core_api_connectors_base.GBPLatLng"
+        },
+        "more_hours": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/social-api_ai_core_api_connectors_base.GBPMoreHours"
+          }
+        },
+        "open_status": {
+          "description": "OpenStatus is OPEN, CLOSED_PERMANENTLY or CLOSED_TEMPORARILY.",
+          "type": "string",
+          "example": "OPEN"
+        },
+        "phone_numbers": {
+          "$ref": "#/components/schemas/social-api_ai_core_api_connectors_base.GBPPhoneNumbersUpdate"
+        },
+        "regular_hours": {
+          "$ref": "#/components/schemas/social-api_ai_core_api_connectors_base.GBPHoursUpdate"
+        },
+        "service_area": {
+          "$ref": "#/components/schemas/social-api_ai_core_api_connectors_base.GBPServiceAreaUpdate"
+        },
+        "special_hours": {
+          "$ref": "#/components/schemas/social-api_ai_core_api_connectors_base.GBPSpecialHoursUpdate"
+        },
+        "store_code": {
+          "type": "string",
+          "example": "JP-01"
+        },
+        "storefront_address": {
+          "$ref": "#/components/schemas/social-api_ai_core_api_connectors_base.GBPAddressUpdate"
+        },
+        "title": {
+          "type": "string",
+          "example": "Joe's Pizza (Downtown)"
+        },
+        "website_uri": {
+          "type": "string",
+          "example": "https://joes.example"
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/google/accounts/{id}/insights",
+    "method": "GET",
+    "summary": "Get Google Business Profile performance metrics",
+    "group": "Google",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "start_date",
+        "in": "query",
+        "required": true,
+        "description": "Inclusive start date, YYYY-MM-DD"
+      },
+      {
+        "name": "end_date",
+        "in": "query",
+        "required": true,
+        "description": "Inclusive end date, YYYY-MM-DD"
+      },
+      {
+        "name": "metric",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated metric names, defaults to all"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/google/accounts/{id}/media",
+    "method": "GET",
+    "summary": "List a Google Business Profile location's media",
+    "group": "Google",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "contributed",
+        "in": "query",
+        "required": false,
+        "description": "Read the customer-contributed gallery instead of your own media"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Items per page"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from a previous response"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/google/accounts/{id}/media",
+    "method": "POST",
+    "summary": "Add media to a Google Business Profile location",
+    "group": "Google",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "COVER",
+            "PROFILE",
+            "LOGO",
+            "EXTERIOR",
+            "INTERIOR",
+            "PRODUCT",
+            "AT_WORK",
+            "FOOD_AND_DRINK",
+            "MENU",
+            "COMMON_AREA",
+            "ROOMS",
+            "TEAMS",
+            "ADDITIONAL"
+          ],
+          "example": "INTERIOR"
+        },
+        "description": {
+          "type": "string",
+          "example": "Main dining room"
+        },
+        "media": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.MediaInput"
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/google/accounts/{id}/media/{mediaId}",
+    "method": "GET",
+    "summary": "Get one Google Business Profile media item",
+    "group": "Google",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "mediaId",
+        "in": "path",
+        "required": true,
+        "description": "Media item ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/google/accounts/{id}/media/{mediaId}",
+    "method": "DELETE",
+    "summary": "Remove media from a Google Business Profile location",
+    "group": "Google",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "mediaId",
+        "in": "path",
+        "required": true,
+        "description": "Media item ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/google/accounts/{id}/search-keywords",
+    "method": "GET",
+    "summary": "Get the search keywords that surfaced a Google Business Profile",
+    "group": "Google",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "start_month",
+        "in": "query",
+        "required": true,
+        "description": "Inclusive start month, YYYY-MM"
+      },
+      {
+        "name": "end_month",
+        "in": "query",
+        "required": true,
+        "description": "Inclusive end month, YYYY-MM"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Keywords per page, maximum 100"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from a previous response"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/google/logins/{loginId}/locations",
+    "method": "GET",
+    "summary": "List a Google login's Business Profile locations",
+    "group": "Google",
+    "parameters": [
+      {
+        "name": "loginId",
+        "in": "path",
+        "required": true,
+        "description": "Google login (credential) ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/google/logins/{loginId}/locations/{locationId}/assign",
+    "method": "POST",
+    "summary": "Assign a Google Business Profile location to a brand",
+    "group": "Google",
+    "parameters": [
+      {
+        "name": "loginId",
+        "in": "path",
+        "required": true,
+        "description": "Google login (credential) ID"
+      },
+      {
+        "name": "locationId",
+        "in": "path",
+        "required": true,
+        "description": "Location resource name (URL-encoded), e.g. accounts%2F123%2Flocations%2F456"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "brand_id": {
+          "type": "string",
+          "example": "b7f9..."
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/instagram/accounts/{id}/media/{mediaId}/collab/accept",
+    "method": "POST",
+    "summary": "Accept an Instagram collaboration invite",
+    "group": "Instagram",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (the invited account)"
+      },
+      {
+        "name": "mediaId",
+        "in": "path",
+        "required": true,
+        "description": "Instagram media ID carrying the invite"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/instagram/accounts/{id}/media/{mediaId}/collab/decline",
+    "method": "POST",
+    "summary": "Decline an Instagram collaboration invite",
+    "group": "Instagram",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (the invited account)"
+      },
+      {
+        "name": "mediaId",
+        "in": "path",
+        "required": true,
+        "description": "Instagram media ID carrying the invite"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/instagram/accounts/{id}/media/{mediaId}/collaborators",
+    "method": "GET",
+    "summary": "List collaborators on an Instagram post",
+    "group": "Instagram",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (must be the publishing account)"
+      },
+      {
+        "name": "mediaId",
+        "in": "path",
+        "required": true,
+        "description": "Instagram media ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/instagram/accounts/{id}/participants/{participantId}/profile",
+    "method": "GET",
+    "summary": "Get an Instagram messaging participant's profile",
+    "group": "Instagram",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "participantId",
+        "in": "path",
+        "required": true,
+        "description": "Instagram-scoped user ID (IGSID) of the participant, as returned in conversation payloads"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/instagram/accounts/{id}/stories",
+    "method": "GET",
+    "summary": "List active Instagram stories",
+    "group": "Instagram",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Maximum number of results to return (1-100, default 20)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor returned by the previous response"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/instagram/accounts/{id}/summary",
+    "method": "GET",
+    "summary": "Get Instagram account insights summary",
+    "group": "Instagram",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/linkedin/insights",
+    "method": "GET",
+    "summary": "Get LinkedIn page insights (beta)",
+    "group": "LinkedIn",
+    "parameters": [
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/pinterest/accounts/{id}/pins",
+    "method": "GET",
+    "summary": "List Pinterest pins",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Maximum pins to return (default 50, max 50)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/pinterest/accounts/{id}/summary",
+    "method": "GET",
+    "summary": "Get Pinterest account summary",
+    "group": "Accounts",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/threads/insights",
+    "method": "GET",
+    "summary": "Get Threads insights (beta)",
+    "group": "Threads",
+    "parameters": [
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "level",
+        "in": "query",
+        "required": true,
+        "description": "media or account"
+      },
+      {
+        "name": "post_id",
+        "in": "query",
+        "required": false,
+        "description": "Platform post ID, required when level is media"
+      },
+      {
+        "name": "metric",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated metric names, defaults to all metrics valid for the level"
+      },
+      {
+        "name": "breakdown",
+        "in": "query",
+        "required": false,
+        "description": "One of country, city, age, gender; only valid with follower_demographics"
+      },
+      {
+        "name": "since",
+        "in": "query",
+        "required": false,
+        "description": "Unix timestamp lower bound, must be >= 1712991600"
+      },
+      {
+        "name": "until",
+        "in": "query",
+        "required": false,
+        "description": "Unix timestamp upper bound, must be >= 1712991600"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/threads/profile-lookup",
+    "method": "GET",
+    "summary": "Look up a public Threads profile (beta)",
+    "group": "Threads",
+    "parameters": [
+      {
+        "name": "account_id",
+        "in": "query",
+        "required": true,
+        "description": "Connected account ID whose token authorizes the lookup"
+      },
+      {
+        "name": "username",
+        "in": "query",
+        "required": true,
+        "description": "Exact Threads username, with or without a leading @"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/tiktok/accounts/{id}/summary",
+    "method": "GET",
+    "summary": "Get TikTok account summary",
+    "group": "TikTok",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/tiktok/accounts/{id}/sync",
+    "method": "POST",
+    "summary": "Re-sync a TikTok account's videos",
+    "group": "TikTok",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/whatsapp/accounts/{id}/send-template",
+    "method": "POST",
+    "summary": "Send a template message",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (sapi_acc_...)"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "description": "Components carries header/body/button variable substitutions.\nEach component matches WhatsApp's template component schema (type + parameters).",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.WhatsAppTemplateComponent"
+          }
+        },
+        "language": {
+          "description": "Language is the BCP-47 code matching the template's approved language (e.g. en_US, fr_FR).",
+          "type": "string",
+          "example": "en_US"
+        },
+        "template_name": {
+          "description": "TemplateName is the approved template name to send.",
+          "type": "string",
+          "example": "order_confirmation"
+        },
+        "to": {
+          "description": "To is the recipient phone number in E.164 format without the leading \"+\".",
+          "type": "string",
+          "example": "15551234567"
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/whatsapp/accounts/{id}/templates",
+    "method": "GET",
+    "summary": "List message templates",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (sapi_acc_...)"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Maximum number of templates to return (1-100)"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor (after) from a previous response"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/whatsapp/accounts/{id}/templates",
+    "method": "POST",
+    "summary": "Create a message template",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (sapi_acc_...)"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "description": "Category is the message category. Marketing intent in a UTILITY template triggers automatic rejection.",
+          "type": "string",
+          "enum": [
+            "MARKETING",
+            "UTILITY",
+            "AUTHENTICATION"
+          ],
+          "example": "UTILITY"
+        },
+        "components": {
+          "description": "Components define the template body, optional header, optional footer, and optional buttons.\nAt minimum one BODY component is required.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.WhatsAppTemplateComponentDef"
+          }
+        },
+        "language": {
+          "description": "Language is the BCP-47 language code (e.g. en_US, fr_FR, pt_BR).",
+          "type": "string",
+          "example": "en_US"
+        },
+        "name": {
+          "description": "Name is the template identifier. Lowercase letters, digits, underscores only; no spaces.",
+          "type": "string",
+          "example": "order_confirmation"
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/whatsapp/accounts/{id}/templates",
+    "method": "DELETE",
+    "summary": "Delete a message template",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (sapi_acc_...)"
+      },
+      {
+        "name": "name",
+        "in": "query",
+        "required": true,
+        "description": "Template name to delete"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/whatsapp/phone-numbers/{id}/business-profile",
+    "method": "GET",
+    "summary": "Get a WhatsApp Business Profile",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "WhatsApp phone number platform ID (numeric ID, not the E.164 number)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/whatsapp/phone-numbers/{id}/business-profile",
+    "method": "PUT",
+    "summary": "Update a WhatsApp Business Profile",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "WhatsApp phone number platform ID (numeric ID, not the E.164 number)"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "about": {
+          "description": "About is the profile tagline (max 139 characters).",
+          "type": "string",
+          "example": "Reach us 9-5 weekdays."
+        },
+        "address": {
+          "description": "Address is the business address (max 256 characters).",
+          "type": "string",
+          "example": "1 Hacker Way, Menlo Park, CA"
+        },
+        "description": {
+          "description": "Description is the business description.",
+          "type": "string",
+          "example": "Acme Corp customer support."
+        },
+        "email": {
+          "description": "Email is the contact email.",
+          "type": "string",
+          "example": "support@acme.com"
+        },
+        "profile_picture_handle": {
+          "description": "ProfilePictureHandle is a handle returned by the Resumable Upload API.\nUse this to change the profile picture; the picture URL is read-only.",
+          "type": "string",
+          "example": "4::aW1hZ2UvanBlZw=="
+        },
+        "vertical": {
+          "description": "Vertical is the business category.",
+          "type": "string",
+          "enum": [
+            "OTHER",
+            "AUTO",
+            "BEAUTY",
+            "APPAREL",
+            "EDU",
+            "ENTERTAIN",
+            "EVENT_PLAN",
+            "FINANCE",
+            "GROCERY",
+            "GOVT",
+            "HOTEL",
+            "HEALTH",
+            "NONPROFIT",
+            "PROF_SERVICES",
+            "RETAIL",
+            "TRAVEL",
+            "RESTAURANT",
+            "ALCOHOL"
+          ],
+          "example": "RETAIL"
+        },
+        "websites": {
+          "description": "Websites lists the business websites (max 2).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "https://acme.com"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/whatsapp/phone-numbers/{id}/deregister",
+    "method": "POST",
+    "summary": "Deregister a phone number from WhatsApp Business",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (sapi_acc_...)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/whatsapp/phone-numbers/{id}/register",
+    "method": "POST",
+    "summary": "Register a phone number with WhatsApp Business",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (sapi_acc_...)"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "pin": {
+          "description": "PIN is the 6-digit two-step verification PIN to set on the phone number.\nThis PIN is required for future re-registration and must be stored securely.",
+          "type": "string",
+          "example": "123456"
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/whatsapp/phone-numbers/{id}/request-code",
+    "method": "POST",
+    "summary": "Request a phone number verification code",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (sapi_acc_...)"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "description": "Language is the BCP-47 locale used for the verification message (e.g. en_US, fr_FR).",
+          "type": "string",
+          "example": "en_US"
+        },
+        "method": {
+          "description": "Method is the verification channel. WhatsApp Business API requires SMS or VOICE.",
+          "type": "string",
+          "enum": [
+            "SMS",
+            "VOICE"
+          ],
+          "example": "SMS"
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/whatsapp/phone-numbers/{id}/status",
+    "method": "GET",
+    "summary": "Get phone number registration status",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (sapi_acc_...)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/whatsapp/phone-numbers/{id}/verify-code",
+    "method": "POST",
+    "summary": "Verify a phone number with a code",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID (sapi_acc_...)"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Code is the 6-digit verification code received via SMS or voice.",
+          "type": "string",
+          "example": "123456"
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/whatsapp/templates/validate",
+    "method": "POST",
+    "summary": "Validate a message template",
+    "group": "WhatsApp",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "description": "Category is the message category. Marketing intent in a UTILITY template triggers automatic rejection.",
+          "type": "string",
+          "enum": [
+            "MARKETING",
+            "UTILITY",
+            "AUTHENTICATION"
+          ],
+          "example": "UTILITY"
+        },
+        "components": {
+          "description": "Components define the template body, optional header, optional footer, and optional buttons.\nAt minimum one BODY component is required.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.WhatsAppTemplateComponentDef"
+          }
+        },
+        "language": {
+          "description": "Language is the BCP-47 language code (e.g. en_US, fr_FR, pt_BR).",
+          "type": "string",
+          "example": "en_US"
+        },
+        "name": {
+          "description": "Name is the template identifier. Lowercase letters, digits, underscores only; no spaces.",
+          "type": "string",
+          "example": "order_confirmation"
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/whatsapp/templates/{id}",
+    "method": "GET",
+    "summary": "Get a message template",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "WhatsApp template platform ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/whatsapp/templates/{id}",
+    "method": "PUT",
+    "summary": "Edit a message template",
+    "group": "WhatsApp",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "WhatsApp template platform ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "description": "Components replaces the template's components.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.WhatsAppTemplateComponentDef"
+          }
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/youtube/accounts/{id}/summary",
+    "method": "GET",
+    "summary": "Get YouTube channel summary",
+    "group": "YouTube",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/youtube/accounts/{id}/sync",
+    "method": "POST",
+    "summary": "Re-sync a YouTube account's videos",
+    "group": "YouTube",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/platforms/youtube/accounts/{id}/videos/{videoId}",
+    "method": "PATCH",
+    "summary": "Edit a published YouTube video (title, description, visibility, Studio tags)",
+    "group": "YouTube",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Connected account ID"
+      },
+      {
+        "name": "videoId",
+        "in": "path",
+        "required": true,
+        "description": "YouTube video ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "visibility": {
+          "description": "public | unlisted | private",
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/youtube/comments/{commentId}",
+    "method": "PATCH",
+    "summary": "Edit a YouTube comment",
+    "group": "YouTube",
+    "parameters": [
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "description": "YouTube comment ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "post_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/platforms/youtube/comments/{commentId}/moderate",
+    "method": "POST",
+    "summary": "Moderate a YouTube comment",
+    "group": "YouTube",
+    "parameters": [
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "description": "YouTube comment ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "ban_author": {
+          "type": "boolean"
+        },
+        "post_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "path": "/posts",
+    "method": "GET",
+    "summary": "List all posts",
+    "group": "Posts",
+    "parameters": [
+      {
+        "name": "account_ids",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated connected account IDs"
+      },
+      {
+        "name": "brand_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter to posts whose targets belong to this brand"
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "Filter by status (draft, scheduled, publishing, published, partial, failed, cancelled)"
+      },
+      {
+        "name": "platform",
+        "in": "query",
+        "required": false,
+        "description": "Filter by platform (e.g. instagram, facebook)"
+      },
+      {
+        "name": "page_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter by specific page ID (for multi-page accounts like Facebook)"
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "description": "Start of date range (RFC3339)"
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "description": "End of date range (RFC3339)"
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "required": false,
+        "description": "Text search (case-insensitive)"
+      },
+      {
+        "name": "sort",
+        "in": "query",
+        "required": false,
+        "description": "Sort order: scheduled_asc (default), scheduled_desc, created_asc, created_desc"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor from previous response"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Max results (default 25, max 100)"
+      },
+      {
+        "name": "hidden",
+        "in": "query",
+        "required": false,
+        "description": "Include hidden posts (default false)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/posts",
+    "method": "POST",
+    "summary": "Create or schedule a post",
+    "group": "Posts",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "first_comment": {
+          "description": "FirstComment is auto-posted as the first comment after publishing (Instagram, Facebook, YouTube). Ignored by every other platform, and by Facebook Page Stories.",
+          "type": "string",
+          "example": "Follow us for more updates!"
+        },
+        "media": {
+          "description": "Media is the ordered, agnostic media list. Each item is a url, a media_id,\nor a platform_attachment_id; order and mixing are preserved. Supersedes media_ids.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.MediaInput"
+          }
+        },
+        "media_ids": {
+          "description": "MediaIDs are previously uploaded media file IDs to attach.\n\nDeprecated: use Media with source_type \"media_id\". Ignored when media is set.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "platform_data": {
+          "description": "PlatformData passes platform-specific fields keyed by platform name (e.g. {\"instagram\": {\"content_type\": \"feed\"}}). Folded into each matching target; a target's own platform_data wins on conflicts.",
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "publish_now": {
+          "description": "PublishNow publishes immediately when targets are provided (ignores scheduled_at). Without this flag (and without scheduled_at) the post is saved as a draft; publish it later with POST /posts/{pid}/publish.",
+          "type": "boolean",
+          "example": false
+        },
+        "scheduled_at": {
+          "description": "ScheduledAt queues the post for future publication (RFC3339). When set, the post is scheduled rather than drafted.",
+          "type": "string",
+          "example": "2026-04-01T10:00:00Z"
+        },
+        "segments": {
+          "description": "Segments are continuation posts that publish as a native thread on X. Threads chaining is temporarily unavailable.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.SegmentRequest"
+          }
+        },
+        "skip_duplicate_check": {
+          "description": "SkipDuplicateCheck bypasses the duplicate content detection.",
+          "type": "boolean",
+          "example": false
+        },
+        "skip_validation": {
+          "description": "SkipValidation bypasses pre-publish validation. The post is scheduled/published as-is and may fail at the platform.",
+          "type": "boolean",
+          "example": false
+        },
+        "targets": {
+          "description": "Targets specifies which connected accounts to publish to, with optional per-target overrides.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.TargetRequest"
+          }
+        },
+        "text": {
+          "description": "Text is the post body content. Required, unless every target supplies a\nbody of its own through text or a platform_data field the connector uses\nas the body (e.g. Pinterest's platform_data.description IS the pin body).",
+          "type": "string",
+          "example": "Check out our new product launch! #newproduct"
+        },
+        "title": {
+          "description": "Title is an optional post title (used by LinkedIn, Google).",
+          "type": "string",
+          "example": "Exciting News from Acme Corp"
+        },
+        "visibility": {
+          "description": "Visibility controls who can see the post. Platform-dependent values: public, private, connections_only, logged_in.",
+          "type": "string",
+          "enum": [
+            "public",
+            "private",
+            "connections_only",
+            "logged_in"
+          ],
+          "example": "public"
+        }
+      }
+    }
+  },
+  {
+    "path": "/posts/validate",
+    "method": "GET",
+    "summary": "Get platform constraints",
+    "group": "Posts",
+    "parameters": [
+      {
+        "name": "platform",
+        "in": "query",
+        "required": false,
+        "description": "Filter to a single platform"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/posts/validate",
+    "method": "POST",
+    "summary": "Validate post content",
+    "group": "Posts",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_ids": {
+          "description": "AccountIDs lists connected account IDs - their platforms are resolved automatically.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "media": {
+          "description": "Media is the ordered, agnostic media list. Each item is a url, a media_id,\nor a platform_attachment_id; order and mixing are preserved. Supersedes media_ids.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.MediaInput"
+          }
+        },
+        "media_ids": {
+          "description": "MediaIDs are media file IDs to validate (checks count and type limits).\n\nDeprecated: use Media with source_type \"media_id\". Ignored when media is set.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "platform_data": {
+          "description": "PlatformData passes platform-specific fields keyed by platform name (e.g. {\"instagram\": {\"content_type\": \"feed\"}}). Folded into each matching target; a target's own platform_data wins on conflicts.",
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "platforms": {
+          "description": "Platforms lists platform names to validate against (e.g. [\"instagram\", \"linkedin\"]).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scheduled_at": {
+          "description": "ScheduledAt validates the schedule time (must be in the future, within platform limits).",
+          "type": "string",
+          "example": "2026-04-01T10:00:00Z"
+        },
+        "segments": {
+          "description": "Segments are continuation posts that publish as a native thread on X. Threads chaining is temporarily unavailable.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.SegmentRequest"
+          }
+        },
+        "targets": {
+          "description": "Targets validates per-target overrides if provided.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.TargetRequest"
+          }
+        },
+        "text": {
+          "description": "Text is the post content to validate against platform constraints.",
+          "type": "string",
+          "example": "Check out our new product! #launch"
+        }
+      }
+    }
+  },
+  {
+    "path": "/posts/{pid}",
+    "method": "GET",
+    "summary": "Get a single post",
+    "group": "Posts",
+    "parameters": [
+      {
+        "name": "pid",
+        "in": "path",
+        "required": true,
+        "description": "SocialAPI post ID (UUID) or platform post ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/posts/{pid}",
+    "method": "DELETE",
+    "summary": "Delete or cancel a post",
+    "group": "Posts",
+    "parameters": [
+      {
+        "name": "pid",
+        "in": "path",
+        "required": true,
+        "description": "Post ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/posts/{pid}",
+    "method": "PATCH",
+    "summary": "Update a post",
+    "group": "Posts",
+    "parameters": [
+      {
+        "name": "pid",
+        "in": "path",
+        "required": true,
+        "description": "Post ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "first_comment": {
+          "description": "FirstComment replaces the auto-first-comment.",
+          "type": "string"
+        },
+        "hidden": {
+          "description": "Hidden archives the post from default list views when true.",
+          "type": "boolean",
+          "example": false
+        },
+        "media": {
+          "description": "Media is the ordered, agnostic media list. Each item is a url, a media_id,\nor a platform_attachment_id; order and mixing are preserved. Supersedes media_ids.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.MediaInput"
+          }
+        },
+        "media_ids": {
+          "description": "MediaIDs replaces the attached media files.\n\nDeprecated: use Media with source_type \"media_id\". Ignored when media is set.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "platform_data": {
+          "description": "PlatformData passes platform-specific fields keyed by platform name (e.g. {\"instagram\": {\"content_type\": \"feed\"}}). Folded into each matching target; a target's own platform_data wins on conflicts.",
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "scheduled_at": {
+          "description": "ScheduledAt changes the scheduled publication time (RFC3339).",
+          "type": "string",
+          "example": "2026-04-02T14:00:00Z"
+        },
+        "segments": {
+          "description": "Segments are continuation posts that publish as a native thread on X. Threads chaining is temporarily unavailable.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.SegmentRequest"
+          }
+        },
+        "skip_validation": {
+          "description": "SkipValidation bypasses pre-publish validation. The post is scheduled/published as-is and may fail at the platform.",
+          "type": "boolean",
+          "example": false
+        },
+        "targets": {
+          "description": "Targets replaces or updates per-platform target configuration.",
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/api_endpoints.TargetRequest"
+          }
+        },
+        "text": {
+          "description": "Text replaces the post body. Only for draft/scheduled/failed posts.",
+          "type": "string",
+          "example": "Updated post content"
+        },
+        "title": {
+          "description": "Title replaces the post title.",
+          "type": "string",
+          "example": "Updated Title"
+        },
+        "visibility": {
+          "description": "Visibility changes who can see the post.",
+          "type": "string",
+          "enum": [
+            "public",
+            "private",
+            "connections_only",
+            "logged_in"
+          ],
+          "example": "public"
+        }
+      }
+    }
+  },
+  {
+    "path": "/posts/{pid}/analytics",
+    "method": "GET",
+    "summary": "Get post analytics history",
+    "group": "Analytics",
+    "parameters": [
+      {
+        "name": "pid",
+        "in": "path",
+        "required": true,
+        "description": "SocialAPI post ID (UUID)"
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "description": "First day, YYYY-MM-DD. Defaults to 29 days before to."
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "description": "Last day, YYYY-MM-DD. Defaults to today (UTC)."
+      },
+      {
+        "name": "metrics",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated metric names. Defaults to every stored metric."
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/posts/{pid}/metrics",
+    "method": "GET",
+    "summary": "Get post metrics",
+    "group": "Posts",
+    "parameters": [
+      {
+        "name": "pid",
+        "in": "path",
+        "required": true,
+        "description": "SocialAPI post ID (UUID) or platform post ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/posts/{pid}/publish",
+    "method": "POST",
+    "summary": "Publish a draft post now",
+    "group": "Posts",
+    "parameters": [
+      {
+        "name": "pid",
+        "in": "path",
+        "required": true,
+        "description": "Post ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/posts/{pid}/retry",
+    "method": "POST",
+    "summary": "Retry a failed post",
+    "group": "Posts",
+    "parameters": [
+      {
+        "name": "pid",
+        "in": "path",
+        "required": true,
+        "description": "Post ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/posts/{pid}/unpublish",
+    "method": "POST",
+    "summary": "Unpublish a post",
+    "group": "Posts",
+    "parameters": [
+      {
+        "name": "pid",
+        "in": "path",
+        "required": true,
+        "description": "Post ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "description": "AccountID optionally scopes the unpublish to a single platform target.",
+          "type": "string",
+          "example": "acc_01HZ9X3Q4R5M6N7P8V2K0W1J"
+        }
+      }
+    }
+  },
+  {
+    "path": "/usage",
+    "method": "GET",
+    "summary": "Get resource usage for the current billing period",
+    "group": "Usage",
+    "parameters": [],
+    "bodySchema": {}
+  },
+  {
+    "path": "/webhooks",
+    "method": "GET",
+    "summary": "List webhook endpoints",
+    "group": "Webhooks",
+    "parameters": [],
+    "bodySchema": {}
+  },
+  {
+    "path": "/webhooks",
+    "method": "POST",
+    "summary": "Create webhook endpoint",
+    "group": "Webhooks",
+    "parameters": [],
+    "bodySchema": {
+      "type": "object",
+      "required": [
+        "events"
+      ],
+      "properties": {
+        "events": {
+          "description": "Events is the list of event types to subscribe to.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "post.scheduled",
+              "post.published",
+              "post.failed",
+              "post.partial",
+              "post.updated",
+              "post.deleted",
+              "post.unpublished",
+              "post.retried",
+              "comment.received",
+              "dm.received",
+              "dm.sent",
+              "dm.referral",
+              "dm.postback",
+              "dm.deleted",
+              "dm.status.sent",
+              "dm.status.delivered",
+              "dm.status.read",
+              "dm.status.failed",
+              "review.received",
+              "review.updated",
+              "mention.received",
+              "account.connected",
+              "account.disconnected",
+              "account.updated",
+              "page.removed"
+            ]
+          },
+          "example": [
+            "comment.received",
+            "dm.received"
+          ]
+        },
+        "url": {
+          "description": "URL is the HTTPS endpoint that will receive webhook POST requests.",
+          "type": "string",
+          "example": "https://example.com/webhooks/socialapi"
+        }
+      }
+    }
+  },
+  {
+    "path": "/webhooks/events",
+    "method": "GET",
+    "summary": "List available webhook event types",
+    "group": "Webhooks",
+    "parameters": [],
+    "bodySchema": {}
+  },
+  {
+    "path": "/webhooks/{id}",
+    "method": "GET",
+    "summary": "Get webhook endpoint",
+    "group": "Webhooks",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Webhook endpoint ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/webhooks/{id}",
+    "method": "DELETE",
+    "summary": "Delete webhook endpoint",
+    "group": "Webhooks",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Webhook endpoint ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/webhooks/{id}",
+    "method": "PATCH",
+    "summary": "Update webhook endpoint",
+    "group": "Webhooks",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Webhook endpoint ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "description": "Events replaces the subscribed event types.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "post.scheduled",
+              "post.published",
+              "post.failed",
+              "post.partial",
+              "post.updated",
+              "post.deleted",
+              "post.unpublished",
+              "post.retried",
+              "comment.received",
+              "dm.received",
+              "dm.sent",
+              "dm.referral",
+              "dm.postback",
+              "dm.deleted",
+              "dm.status.sent",
+              "dm.status.delivered",
+              "dm.status.read",
+              "dm.status.failed",
+              "review.received",
+              "review.updated",
+              "mention.received",
+              "account.connected",
+              "account.disconnected",
+              "account.updated",
+              "page.removed"
+            ]
+          }
+        },
+        "is_active": {
+          "description": "IsActive enables or disables delivery to this endpoint.",
+          "type": "boolean",
+          "example": true
+        },
+        "url": {
+          "description": "URL changes the webhook delivery endpoint. Must be HTTPS.",
+          "type": "string",
+          "example": "https://example.com/webhooks/socialapi"
+        }
+      }
+    }
+  },
+  {
+    "path": "/webhooks/{id}/deliveries",
+    "method": "GET",
+    "summary": "List webhook deliveries",
+    "group": "Webhooks",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Webhook endpoint ID"
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "Filter by delivery status"
+      },
+      {
+        "name": "event_type",
+        "in": "query",
+        "required": false,
+        "description": "Filter by event type"
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "description": "Pagination cursor"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Page size (1-100, default 50)"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/webhooks/{id}/deliveries/{did}",
+    "method": "GET",
+    "summary": "Get webhook delivery",
+    "group": "Webhooks",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Webhook endpoint ID"
+      },
+      {
+        "name": "did",
+        "in": "path",
+        "required": true,
+        "description": "Delivery ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/webhooks/{id}/deliveries/{did}/retry",
+    "method": "POST",
+    "summary": "Retry webhook delivery",
+    "group": "Webhooks",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Webhook endpoint ID"
+      },
+      {
+        "name": "did",
+        "in": "path",
+        "required": true,
+        "description": "Delivery ID"
+      }
+    ],
+    "bodySchema": {}
+  },
+  {
+    "path": "/webhooks/{id}/test",
+    "method": "POST",
+    "summary": "Send test webhook delivery",
+    "group": "Webhooks",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Webhook endpoint ID"
+      }
+    ],
+    "bodySchema": {
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+]

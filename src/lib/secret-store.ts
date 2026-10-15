@@ -1,0 +1,6 @@
+import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
+import { AppError } from './security';
+function key(){const raw=process.env.DATA_ENCRYPTION_KEY;if(!raw||!/^[a-f0-9]{64}$/i.test(raw))throw new AppError(503,'Серверийн DATA_ENCRYPTION_KEY тохируулагдаагүй байна.','encryption.not_configured');return Buffer.from(raw,'hex')}
+export const encryptionReady=()=>/^[a-f0-9]{64}$/i.test(process.env.DATA_ENCRYPTION_KEY||'');
+export function seal(value:unknown,workspace:string){const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',key(),iv);cipher.setAAD(Buffer.from(workspace));const encrypted=Buffer.concat([cipher.update(JSON.stringify(value),'utf8'),cipher.final()]);return [iv.toString('hex'),cipher.getAuthTag().toString('hex'),encrypted.toString('hex')].join('.')}
+export function unseal<T>(value:string,workspace:string):T{try{const [iv,tag,encrypted]=value.split('.');const decipher=createDecipheriv('aes-256-gcm',key(),Buffer.from(iv,'hex'));decipher.setAAD(Buffer.from(workspace));decipher.setAuthTag(Buffer.from(tag,'hex'));return JSON.parse(Buffer.concat([decipher.update(Buffer.from(encrypted,'hex')),decipher.final()]).toString('utf8'))}catch(e){if(e instanceof AppError)throw e;throw new AppError(503,'Мерчантын тохиргоог тайлахад алдаа гарлаа. Админд хандана уу.','encryption.failed')}}

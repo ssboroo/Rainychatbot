@@ -1,0 +1,13 @@
+import { db, type User } from './db';
+import { AppError, digest, id } from './security';
+import { ownConversation, ownResource, social } from './social';
+import { richMessageSchema, compileRichMessage } from './rich-message';
+import { botSettings, setHandoff } from './bot-store';
+export async function sendRichMessage(u:User,input:any){
+ const c=await ownConversation(u,String(input.conversation_id||''));const rich=richMessageSchema.parse({text:input.text||'',attachments:input.attachments||[],links:input.links||[]});for(const a of rich.attachments)if(a.source_type==='media_id')ownResource(u,'media',a.source);
+ const payload={account_id:c.account_id,...compileRichMessage(rich,c.platform)};const key=typeof input.request_key==='string'?input.request_key:'';if(key&&!/^[a-zA-Z0-9:_-]{8,200}$/.test(key))throw new AppError(400,'Хүсэлтийн дугаар буруу.');const hash=digest(JSON.stringify({conversation_id:c.id||input.conversation_id,...payload}));
+ if(key){const old=db().prepare('SELECT * FROM outbound_requests WHERE workspace_id=? AND request_key=?').get(u.workspace_id,key) as any;if(old){if(old.request_hash!==hash)throw new AppError(409,'Ижил хүсэлтийн дугаарт өөр мессеж илгээхгүй.');if(old.state==='sent')return JSON.parse(old.result);throw new AppError(409,'Өмнөх илгээлтийн төлөв тодорхойгүй эсвэл боловсруулагдаж байна. Чатаа шинэчилж шалгана уу.','message.uncertain')}db().prepare('INSERT INTO outbound_requests(workspace_id,request_key,request_hash,state,created_at) VALUES(?,?,?,?,?)').run(u.workspace_id,key,hash,'sending',Date.now())}
+ // Suspend the local bot before the manual send can race a queued reply.
+ const settings=botSettings(u.workspace_id);if(settings.pause_on_manual)setHandoff(u.workspace_id,input.conversation_id,settings.handoff_minutes);
+ try{const result=await social(`/inbox/conversations/${id(input.conversation_id)}/messages`,'POST',payload);if(key)db().prepare("UPDATE outbound_requests SET state='sent',result=? WHERE workspace_id=? AND request_key=?").run(JSON.stringify(result),u.workspace_id,key);return result}catch(e){if(key){if(e instanceof AppError&&e.status===429&&(e.code==='messaging.velocity_limit'||e.code.endsWith('.rate_limit'))&&Number(e.meta?.sent_count||0)===0)db().prepare('DELETE FROM outbound_requests WHERE workspace_id=? AND request_key=?').run(u.workspace_id,key);else db().prepare("UPDATE outbound_requests SET state='uncertain' WHERE workspace_id=? AND request_key=?").run(u.workspace_id,key);}if(e instanceof AppError&&Number(e.meta?.sent_count)>0)throw new AppError(409,'Мессежийн зарим хэсэг илгээгдсэн. Чатаа шалгаад зөвхөн дутуу хэсгийг дахин илгээнэ үү.','message.partial');throw e}
+}
